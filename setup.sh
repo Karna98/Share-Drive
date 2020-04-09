@@ -1,25 +1,78 @@
 #bin/bash
-echo "Try Running in virtual enviroment"
-read -p "Do you still want to continue ? [y|N] " -n 1 -r
-echo    # (optional) move to a new line
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-    exit 1
+
+echo "<------------>"
+echo "Setup Virtual Environment and then continue setup (Recommended)"
+echo "<------------>"
+echo
+echo "<------------>"
+echo "Select method to run Share Drive :"
+echo "1) Normal run (without Docker)"
+echo "2) Docker Run (with Docker)"
+read -p " Option [Press 1 or 2 and Enter ]:  " option
+echo "<------------>"
+echo
+
+if [ $option == '1' ]
+then 
+    echo "<------------>"
+    echo "Checking and Installing Requirements"
+    echo "<------------>"
+    echo
+    pip install -r requirements.txt
+    echo
+    echo "<------------>"
+    echo "Requirements Checking and Installation Completed"
+    echo "<------------>"
+    echo
+    echo "<------------>"
+    echo "Starting Share Drive (without Docker) ..."
+    echo "<------------>"
+    echo
+    python3 app.py
+else 
+    if [[ "$(docker images -q share-drive 2> /dev/null)" == "" ]]; 
+    then
+        echo "<------------>"
+        echo "Creating Docker container 'share-drive' ..."
+        echo "<------------>"
+        echo
+        sudo docker build --tag share-drive .
+        echo
+        echo "<------------>"
+        echo "Created Docker container 'share-drive' sucessfully"
+        echo "<------------>"
+        echo
+    fi
+    echo "<------------>"
+    echo "Starting Share Drive (with Docker)..."
+    echo "<------------>"
+    sudo docker start share-drive
+    echo
+    
+    echo "<------------>"
+    echo "Share Drive Running ..."
+    echo
+    echo 'Visit http://127.0.0.1:5001'
+    echo "<------------>"
+    echo 
+
+    echo "<------------>"
+    echo "Press '1' to stop docker (share-drive)"
+    read -p " Stop Share Drive ? [Press 1 and Enter] " choice
+    echo "<------------>"
+    
+    if [ $choice == '1' ]
+    then
+        echo
+        echo "<------------>"
+        echo "Stopping Share Drive ."
+        echo "<------------>"
+        sudo docker stop share-drive
+    fi
 fi
+
+echo
+echo
 echo "<------------>"
-echo "Installing Requirements"
-pip install -r requirements.txt
-echo "Requirements Installation Completed"
+echo "Successfully Stopped Share Drive . BYE !!"
 echo "<------------>"
-echo "Setting Up Database"
-./setupDB.sh
-echo "Database Setup Completed"
-echo "<------------>"
-echo "Exporting 'app' to FLASK_APP"
-export FLASK_APP='app'
-echo "<------------>"
-echo "Setting FLASK_DEBUG"
-export FLASK_DEBUG=1
-echo "<------------>"
-echo "Running FLASK .."
-flask run
