@@ -33,22 +33,26 @@ def upload_post():
     file = request.files['file']
 
     # get filename and folders
-    file_name = secure_filename(file.filename)
+    uploadedFileName = secure_filename(file.filename)
 
-    upload_folder = os.getcwd() + '/app/upload'
+    uploadFolder = os.getcwd() + '/app/upload'
+    tempFolder = os.getcwd() + '/app/upload/tmp'
     
     if file.filename == '':
         return redirect(request.url)
 
     if file and allowed_file(file.filename):
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder, 777)
+        if not os.path.exists(uploadFolder):
+            os.makedirs(uploadFolder, mode=0o777)
+        if not os.path.exists(tempFolder):
+            os.makedirs(tempFolder, mode=0o777)
 
-        complete_path = os.path.join(upload_folder, file_name)
-        file.save(complete_path)
+        tempCompletePath = os.path.join(tempFolder, uploadedFileName)
+        uploadCompletePath = os.path.join(uploadFolder, uploadedFileName)
+        file.save(tempCompletePath)
 
         file_hash = hashlib.md5()
-        with open(complete_path, "rb") as f:
+        with open(tempCompletePath, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
                 file_hash.update(chunk)
         
@@ -57,18 +61,20 @@ def upload_post():
         latestRowCount = OriginalFiles.query.count()
         
         if not filePresent: 
-            uploadFile =  OriginalFiles(file_id=latestRowCount+1,fileName=file_name, md5=file_hash.hexdigest())
-            mappedFile = MappedFiles(user_id=current_user.id, fileName=file_name, original_id=latestRowCount+1)
+            os.replace(tempCompletePath, uploadCompletePath)
+            uploadFile =  OriginalFiles(file_id=latestRowCount+1,fileName=uploadedFileName, md5=file_hash.hexdigest())
+            mappedFile = MappedFiles(user_id=current_user.id, fileName=uploadedFileName, original_id=latestRowCount+1)
             db.session.add(uploadFile)
             db.session.add(mappedFile)
             db.session.commit()
         else:
+            os.remove(tempCompletePath)
             findFile = OriginalFiles.query.filter_by(md5=file_hash.hexdigest()).first()
             
             existsInMapped = MappedFiles.query.filter_by(user_id=current_user.id, original_id=findFile.file_id).first()
             
             if (not existsInMapped):
-                mappedFile = MappedFiles(user_id=current_user.id, fileName=file_name, original_id=findFile.file_id)
+                mappedFile = MappedFiles(user_id=current_user.id, fileName=uploadedFileName, original_id=findFile.file_id)
                 db.session.add(mappedFile)
                 db.session.commit()
 
