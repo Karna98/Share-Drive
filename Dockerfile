@@ -1,5 +1,7 @@
 FROM python:alpine3.7 
 
+LABEL maintainer="vedantwakalkar@gmail.com"
+
 COPY . /app
 WORKDIR /app
 

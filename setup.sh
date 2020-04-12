@@ -36,7 +36,7 @@ else
         echo "Creating Docker container 'share-drive' ..."
         echo "<------------>"
         echo
-        sudo docker build --tag share-drive .
+        sudo docker build -t share-drive:latest .
         echo
         echo "<------------>"
         echo "Created Docker container 'share-drive' sucessfully"
@@ -46,7 +46,7 @@ else
     echo "<------------>"
     echo "Starting Share Drive (with Docker)..."
     echo "<------------>"
-    sudo docker start share-drive
+    sudo docker run -d -p 5001:5001 share-drive
     echo
     
     echo "<------------>"
@@ -67,7 +67,7 @@ else
         echo "<------------>"
         echo "Stopping Share Drive ."
         echo "<------------>"
-        sudo docker stop share-drive
+        sudo docker stop $(docker ps -q --filter ancestor=share-drive )
     fi
 fi
 
