@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, send_from_directory, send_file
 from . import db
 from flask_login import login_required, current_user
-from .models import OriginalFiles, MappedFiles
+from .models import OriginalFiles, MappedFiles, Users
 from werkzeug.utils import secure_filename
 import os
 import hashlib
@@ -12,9 +12,9 @@ main = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
-@main.route('/profile')
+@main.route('/home')
 @login_required
-def profile():
+def home():
     return render_template('profile.html', username=current_user.username)
 
 @main.route('/upload')
@@ -85,16 +85,36 @@ def upload_post():
 @login_required
 def view():
     uploadedFiles = MappedFiles.query.filter_by(user_id=current_user.id)
-    return render_template('view.html', username=current_user.username, files=uploadedFiles)
+    return render_template('view.html', files=uploadedFiles)
 
-@main.route('/download', methods=['GET','POST'])
+@main.route('/download/<type>', methods=['GET','POST'])
 @login_required
-def download_file():
+def download_file(type):
     if request.method == 'POST':
-        mapped_id = request.form.get('mapped_id')
-        upload_folder = os.getcwd() + '/app/upload'
-        uploadedFiles = MappedFiles.query.filter_by(mapped_id=mapped_id).first()
-        originalFiles = OriginalFiles.query.filter_by(file_id=uploadedFiles.original_id).first()
-        upload_folder += '/' + originalFiles.fileName
-        return send_file(upload_folder, as_attachment=True, attachment_filename=uploadedFiles.fileName)
-    return redirect(url_for('main.view'))
+        print(request)
+        print(type)
+        if (type == '1'):
+            mapped_id = request.form.get('mapped_id')
+            upload_folder = os.getcwd() + '/app/upload'
+            uploadedFiles = MappedFiles.query.filter_by(mapped_id=mapped_id).first()
+            originalFiles = OriginalFiles.query.filter_by(file_id=uploadedFiles.original_id).first()
+            upload_folder += '/' + originalFiles.fileName
+            return send_file(upload_folder, as_attachment=True, attachment_filename=uploadedFiles.fileName)
+        if (type == '0'):
+            file_id = request.form.get('file_id')
+            upload_folder = os.getcwd() + '/app/upload'
+            originalFiles = OriginalFiles.query.filter_by(file_id=file_id).first()
+            upload_folder += '/' + originalFiles.fileName
+            return send_file(upload_folder, as_attachment=True, attachment_filename=originalFiles.fileName)
+    return redirect(url_for('main.home'))
+
+@main.route('/admin/view')
+@login_required
+def admin_view():
+    uploadedFiles = MappedFiles.query.all();
+    originalFiles = OriginalFiles.query.all();
+    users = Users.query.all()
+    print(uploadedFiles)
+    print(originalFiles)
+    print(users)
+    return render_template('adminView.html', users=users, originalFiles=originalFiles, files=uploadedFiles)

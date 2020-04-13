@@ -13,15 +13,14 @@
         </tr>   
       </thead> 
       <tbody>
-      {% for i in range(files.count()) %}
+      {% for file in files %}
       <tr>
-        <th>{{ i+1 }}</th>
-        <td>{{ files[i].fileName }}</td>
-        <form method="POST" action="/download">
+        <th>{{ loop.index }}</th>
+        <td>{{ file.fileName }}</td>
+        <form method="POST" action="/download/1">
           <td>
-            <!-- <a class="button is-link is-outlined" type="submit" >Download</a> -->
-            <input type="hidden" value="{{ files[i].mapped_id }}" name="mapped_id" />
-            <button class="button is-link is-outlined" type="submit" download="files[i].fileName">Download</button>
+            <input type="hidden" value="{{ file.mapped_id }}" name="mapped_id" />
+            <button class="button is-link is-outlined" type="submit" download="file.fileName">Download</button>
           </td>
        </form> 
       </tr>

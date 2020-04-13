@@ -46,7 +46,7 @@ else
     echo "<------------>"
     echo "Starting Share Drive (with Docker)..."
     echo "<------------>"
-    sudo docker run -d -p 5001:5001 share-drive
+    sudo docker run -d -p 8080:8080 share-drive
     echo
     
     echo "<------------>"
